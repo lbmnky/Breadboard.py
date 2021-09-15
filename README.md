@@ -1,5 +1,5 @@
 # Breadboard.py
-2D laser setup design
 
+Finally! Draw your experiments before you build them. 
 
 ![test](figures/breadboard1.png)
