@@ -32,10 +32,10 @@ def main():
         # place two mirrors relative
         bb = {}
         bb = Breadboard()
-        bb.draw(30,15)
+        bb.draw(30,15,anodized=False)
         x1 = 20
         y1 = 10
-        angle1 = 55
+        angle1 = 15
         bb.add_mirror(x1, y1, angle1, 1)
         l2 = 15
         x2 = x1 + l2 * np.cos(rad(angle1*2))
