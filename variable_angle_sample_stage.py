@@ -1,35 +1,41 @@
 from breadboard import *
 
 def main():
-    bb1 = Breadboard()
-    bb1.draw(30, 15, False)
 
-    bb1.add_mirror(10, 26, -45, -1)
+    bb = {}
+    for i in range(4):
+        bb[i] = Breadboard()
+        bb[i].draw(9, 12, False)
 
-    alpha = 45
-    beta = 5
+        bb[i].add_mirror(10, 26, -45, -1, 2.5)
 
-    xc = 10
-    yc = 6
-    r = 5
+        alpha = 5 + 25 * i
+        beta = 5
 
-    bb1.add_mirror(xc, yc, 180 + alpha, -1)
-    bb1.draw_circle(xc, yc, r)
+        xc = 10
+        yc = 6
+        xc_s = xc - .8 * np.cos(rad(alpha))
+        yc_s = yc  - .8 * np.sin(rad(alpha))
+        r = 5
 
-    xn = xc + r * np.sin(rad(180 + alpha * 2))
-    yn = yc - r * np.cos(rad(180 + alpha * 2))
+        bb[i].add_mirror(xc_s, yc_s, 180 + alpha, -1)
+        bb[i].draw_circle(xc, yc, r + 1)
 
-    bb1.add_mirror(xn, yn, 180 + alpha * 2 + beta, 1)
+        xn = xc + r * np.cos(rad(+alpha * 2 + 90))
+        yn = yc + r * np.sin(rad(+alpha * 2 + 90))
 
-    #xn = xn - r * np.sin(rad(180 + alpha))
-    #yn = yn + r * np.cos(rad(180 + alpha))
+        bb[i].add_mirror(xn, yn, 180 + alpha * 2 + beta, 1, 1.25)
 
-    bb1.add_mirror(xc, yc, 180 + alpha, -1)
-    bb1.add_mirror(14.5, 26, 45 - beta, -1)
+        xm = xc + (2.54-0.8) * np.cos(rad(alpha))
+        ym = yc + (2.54-0.8) * np.sin(rad(alpha))
 
-    bb1.place_mirrors()
+        bb[i].add_mirror(xm, ym, 180 + alpha, -1)
+        bb[i].add_mirror(14.5, 26, 45 - beta, -1)
 
-    bb1.shoot_laser((0, 26), (10, 26))
+        bb[i].place_mirrors()
+
+        bb[i].shoot_laser((0, 26), (10, 26))
+        plt.title(f"AOI = {alpha}°")
     plt.show()
 
 

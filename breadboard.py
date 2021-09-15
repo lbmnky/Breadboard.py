@@ -22,7 +22,7 @@ class Breadboard:
             fc_color = 'lightgray'
             hl_color = 'silver'
 
-        fig, self.ax = plt.subplots( 1 )
+        fig, self.ax = plt.subplots( 1 , figsize=(nx/2,ny))
 
         self.ax.set_facecolor(fc_color)
 
@@ -42,11 +42,11 @@ class Breadboard:
         self.ax.set_ylim(-2.54, ny * 2.54)
         self.ax.set_xlim(-2.54, nx * 2.54)
 
-    def add_mirror(self, x , y, rot, s):
+    def add_mirror(self, x , y, rot, s, D=2.54):
         ''' doc '''
         self.mirror_center.append((x, y))
         self.mirror_rot.append(rad(rot))
-        self.mirror.append(mirror_coordinates((x, y), rad(rot), 2.54 / 2))
+        self.mirror.append(mirror_coordinates((x, y), rad(rot), D / 2))
         self.mirror_side.append(s)
 
     def place_mirrors(self):
