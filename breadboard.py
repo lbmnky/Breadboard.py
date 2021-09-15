@@ -66,6 +66,12 @@ class Breadboard:
             patch = descartes.PolygonPatch(poly, fc='w', ec='none', zorder=20)
             self.ax.add_patch(patch)
 
+    def draw_circle(self, x, y ,r):
+        angle = np.linspace(0, 2 * np.pi, 150)
+        xx = r * np.cos(angle) + x
+        yy = r * np.sin(angle) + y
+        self.ax.fill(xx,yy,fc='dimgray',ec='k',zorder=10)
+
     def shoot_laser(self, o1, o2):
         # origin and direction
         self.laser.append(o1)
@@ -145,13 +151,19 @@ def main():
 
     xc = 10
     yc = 6
-    bb1.add_mirror(xc, yc, 180+alpha, -1)
-
     r = 5
+
+    bb1.add_mirror(xc, yc, 180+alpha, -1)
+    bb1.draw_circle(xc,yc,r)
+
     xn = xc + r * np.sin(rad(180+alpha*2))
     yn = yc - r * np.cos(rad(180+alpha*2))
 
     bb1.add_mirror(xn, yn, 180+alpha*2+beta, 1)
+
+    #xn = xn - r * np.sin(rad(180 + alpha))
+    #yn = yn + r * np.cos(rad(180 + alpha))
+
     bb1.add_mirror(xc, yc, 180+alpha, -1)
     bb1.add_mirror(14.5, 26, 45-beta, -1)
 

@@ -11,3 +11,7 @@ Even anodized...
 ... and with lots of detail.
 
 ![bb_anodized_detail](figures/detail_anodized.png)
+
+You could plot parametrically, e.g. a rotation stage
+
+![rotation stage](figures/parametric_rot_stage.png)
