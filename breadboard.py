@@ -15,7 +15,7 @@ class Breadboard:
     def draw(self, nx, ny, anodized=True):
         ''' doc '''
 
-        if anodized == True:
+        if anodized is True:
             fc_color = 'xkcd:almost black'
             hl_color = 'xkcd:dark blue gray'
         else:
@@ -39,12 +39,14 @@ class Breadboard:
                                    zorder=10)
                 self.ax.add_patch( patch )
         self.ax.set_aspect( 1 )
+        self.ax.set_ylim(0, ny * 2.54)
+        self.ax.set_xlim(0, nx * 2.54)
 
     def add_mirror(self, x , y, rot, s):
         ''' doc '''
         self.mirror_center.append((x, y))
-        self.mirror_rot.append(self.rad(rot))
-        self.mirror.append(mirror_coordinates((x, y), self.rad(rot), 2.54 / 2))
+        self.mirror_rot.append(rad(rot))
+        self.mirror.append(mirror_coordinates((x, y), rad(rot), 2.54 / 2))
         self.mirror_side.append(s)
 
     def place_mirrors(self):
@@ -59,16 +61,15 @@ class Breadboard:
             poly = temp.buffer(.6 * self.mirror_side[i], single_sided=True)
             patch = descartes.PolygonPatch(poly, fc='silver', ec='k', zorder=20)
             self.ax.add_patch(patch)
-            self.ax.plot(xvals, yvals, 'b', linewidth=2, zorder=40)
-
-    def rad(self, phi):
-        ''' doc '''
-        return phi / 360 * 2 * np.pi
+            temp = shapely.geometry.LineString(self.mirror[i])
+            poly = temp.buffer(.2 * self.mirror_side[i], single_sided=True)
+            patch = descartes.PolygonPatch(poly, fc='w', ec='none', zorder=20)
+            self.ax.add_patch(patch)
 
     def shoot_laser(self, o1, o2):
         # origin and direction
-        self.laser.append((0, 16))
-        self.laser.append((10, 16))
+        self.laser.append(o1)
+        self.laser.append(o2)
 
         # bounce laser off of mirrors (should work automatically)
         for i in range(len(self.mirror)):
@@ -76,12 +77,23 @@ class Breadboard:
             self.laser[i + 1] = intersect
             dx = self.laser[i + 1][0] - self.laser[i][0]
             dy = self.laser[i + 1][1] - self.laser[i][1]
-            fx = 1
-            if dx < 0:
+            if dx <= 0 and dy <= 0:
                 fx = -1
-            fy = 1
-            if dy > 0:
                 fy = -1
+            elif dx <= 0 and dy >= 0:
+                fx = -1
+                fy =  1
+            elif dx >= 0 and dy <= 0:
+                fx =  1
+                fy = 1
+            elif dx >= 0 and dy >= 0:
+                fx =  1
+                fy =  -1
+            else:
+                print('error')
+                print(dx)
+                print(dy)
+
             r = np.sqrt(dx**2 + dy**2)
             laser_angle = fx * fy * np.arccos(dx / r)
             new_dir_x = intersect[0] + 2 * 2.54 * np.cos(laser_angle + 2 * self.mirror_rot[i])
@@ -92,6 +104,11 @@ class Breadboard:
         poly = self.laser.buffer(0.25, single_sided=False)
         patch = descartes.PolygonPatch(poly, fc='red', ec='darkred', alpha=0.75, zorder=10)
         self.ax.add_patch(patch)
+
+def rad(phi):
+    ''' doc '''
+    return phi / 360 * 2 * np.pi
+
 
 
 def line_intersection(line1, line2):
@@ -121,13 +138,26 @@ def main():
     bb1 = Breadboard()
     bb1.draw(30, 15, False)
 
-    bb1.add_mirror(5, 16, -45, -1)
-    bb1.add_mirror(5, 6, 135, -1)
-    bb1.add_mirror(65,6, 45, 1)
+    bb1.add_mirror(10, 26, -45, -1)
+
+    alpha = 45
+    beta = 5
+
+    xc = 10
+    yc = 6
+    bb1.add_mirror(xc, yc, 180+alpha, -1)
+
+    r = 5
+    xn = xc + r * np.sin(rad(180+alpha*2))
+    yn = yc - r * np.cos(rad(180+alpha*2))
+
+    bb1.add_mirror(xn, yn, 180+alpha*2+beta, 1)
+    bb1.add_mirror(xc, yc, 180+alpha, -1)
+    bb1.add_mirror(14.5, 26, 45-beta, -1)
 
     bb1.place_mirrors()
 
-    bb1.shoot_laser((0, 16), (10, 16))
+    bb1.shoot_laser((0, 26), (10, 26))
     plt.show()
 
 
