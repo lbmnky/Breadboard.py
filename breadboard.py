@@ -42,7 +42,6 @@ ly = 15
 nx, ny = (lx, ly)
 x = np.linspace(0, 2.54*(lx-1), nx)
 y = np.linspace(0, 2.54*(ly-1), ny)
-xv, yv = np.meshgrid(x, y)
 
 bb = 'light'
 if bb == 'dark':
@@ -89,7 +88,7 @@ Laser.append(( 0, 16))
 Laser.append((10, 16))
 
 print(Laser[1])
-# bounce laser off of mirrors
+# bounce laser off of mirrors (should work automatically)
 for i in range(len(Mirror)):
     intersect = line_intersection((Laser[i], Laser[i + 1]), Mirror[i])
     Laser[i+1] = intersect
@@ -114,7 +113,7 @@ axes.set_facecolor(bb_color)
 
 for i in range(lx):
     for j in range(ly):
-        Holes = shapely.geometry.Point([xv[j][i], yv[j][i]])
+        Holes = shapely.geometry.Point([x[i], y[j]])
         poly = Holes.buffer(0.3)
         patch = descartes.PolygonPatch(poly,
                                    fc=hole_color,
