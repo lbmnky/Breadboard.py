@@ -2,14 +2,96 @@ import numpy as np
 import matplotlib.pyplot as plt
 import shapely.geometry
 import descartes
-#from shapely.figures import plot_line, plot_bounds, color_issimple
 
+class Breadboard:
+    ''' docstring '''
+    def __init__(self):
+        self.mirror_center = []
+        self.mirror_rot = []
+        self.mirror_side = []
+        self.mirror = []
+        self.laser = []
 
-#def plot_lines(ax, ob):
-#    color = color_issimple(ob)
-#    for line in ob:
-#        plot_line(ax, line, color=color, alpha=0.7, zorder=2)
+    def draw(self, nx, ny, anodized=True):
+        ''' doc '''
 
+        if anodized == True:
+            fc_color = 'xkcd:almost black'
+            hl_color = 'xkcd:dark blue gray'
+        else:
+            fc_color = 'lightgray'
+            hl_color = 'silver'
+
+        fig, self.ax = plt.subplots( 1 )
+
+        self.ax.set_facecolor(fc_color)
+
+        x = np.linspace(0, 2.54*(nx-1), nx)
+        y = np.linspace(0, 2.54*(ny-1), ny)
+        for i in range(nx):
+            for j in range(ny):
+                holes = shapely.geometry.Point([x[i], y[j]])
+                poly = holes.buffer(0.3)
+                patch = descartes.PolygonPatch(poly,
+                                   fc=hl_color,
+                                   ec='dimgray',
+                                   alpha=0.75,
+                                   zorder=10)
+                self.ax.add_patch( patch )
+        self.ax.set_aspect( 1 )
+
+    def add_mirror(self, x , y, rot, s):
+        ''' doc '''
+        self.mirror_center.append((x, y))
+        self.mirror_rot.append(self.rad(rot))
+        self.mirror.append(mirror_coordinates((x, y), self.rad(rot), 2.54 / 2))
+        self.mirror_side.append(s)
+
+    def place_mirrors(self):
+        ''' doc '''
+        for i in range(len(self.mirror)):
+            #for i in self.mirror:
+            xvals = [self.mirror[i][0][0], self.mirror[i][1][0]]
+            yvals = [self.mirror[i][0][1], self.mirror[i][1][1]]
+            #xvals = [i[0][0]], i[1][0]]
+            #yvals = [i[0][1]], i[0][0]]
+            temp = shapely.geometry.LineString(self.mirror[i])
+            poly = temp.buffer(.6 * self.mirror_side[i], single_sided=True)
+            patch = descartes.PolygonPatch(poly, fc='silver', ec='k', zorder=20)
+            self.ax.add_patch(patch)
+            self.ax.plot(xvals, yvals, 'b', linewidth=2, zorder=40)
+
+    def rad(self, phi):
+        ''' doc '''
+        return phi / 360 * 2 * np.pi
+
+    def shoot_laser(self, o1, o2):
+        # origin and direction
+        self.laser.append((0, 16))
+        self.laser.append((10, 16))
+
+        # bounce laser off of mirrors (should work automatically)
+        for i in range(len(self.mirror)):
+            intersect = line_intersection((self.laser[i], self.laser[i + 1]), self.mirror[i])
+            self.laser[i + 1] = intersect
+            dx = self.laser[i + 1][0] - self.laser[i][0]
+            dy = self.laser[i + 1][1] - self.laser[i][1]
+            fx = 1
+            if dx < 0:
+                fx = -1
+            fy = 1
+            if dy > 0:
+                fy = -1
+            r = np.sqrt(dx**2 + dy**2)
+            laser_angle = fx * fy * np.arccos(dx / r)
+            new_dir_x = intersect[0] + 2 * 2.54 * np.cos(laser_angle + 2 * self.mirror_rot[i])
+            new_dir_y = intersect[1] + 2 * 2.54 * np.sin(laser_angle + 2 * self.mirror_rot[i])
+            self.laser.append((new_dir_x, new_dir_y))
+
+        self.laser = shapely.geometry.LineString(self.laser)
+        poly = self.laser.buffer(0.25, single_sided=False)
+        patch = descartes.PolygonPatch(poly, fc='red', ec='darkred', alpha=0.75, zorder=10)
+        self.ax.add_patch(patch)
 
 
 def line_intersection(line1, line2):
@@ -35,6 +117,24 @@ def mirror_coordinates(center, rot, r):
     y2 = center[1] - r * np.sin(rot)
     return[(x1,y1),(x2,y2)]
 
+def main():
+    bb1 = Breadboard()
+    bb1.draw(30, 15, False)
+
+    bb1.add_mirror(5, 16, -45, -1)
+    bb1.add_mirror(5, 6, 135, -1)
+    bb1.add_mirror(65,6, 45, 1)
+
+    bb1.place_mirrors()
+
+    bb1.shoot_laser((0, 16), (10, 16))
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
+
+'''
 
 # hole pattern
 lx = 30
@@ -87,7 +187,6 @@ Laser = []
 Laser.append(( 0, 16))
 Laser.append((10, 16))
 
-print(Laser[1])
 # bounce laser off of mirrors (should work automatically)
 for i in range(len(Mirror)):
     intersect = line_intersection((Laser[i], Laser[i + 1]), Mirror[i])
@@ -106,10 +205,10 @@ for i in range(len(Mirror)):
     new_dir_y = intersect[1] + ly * 2.54 * np.sin(laser_angle + 2 * M_rot[i])
     Laser.append((new_dir_x, new_dir_y))
 
-print(Laser)
 # plot that breadboard
 figure, axes = plt.subplots(1)
 axes.set_facecolor(bb_color)
+
 
 for i in range(lx):
     for j in range(ly):
@@ -121,6 +220,8 @@ for i in range(lx):
                                    alpha=0.75,
                                    zorder=10)
         axes.add_patch(patch)
+
+
 
 
 Laser = shapely.geometry.LineString(Laser)
@@ -141,3 +242,4 @@ plt.ylim(-1*2.54, ly*2.54)
 plt.xlim(-1*2.54, lx*2.54)
 axes.set_aspect(1)
 plt.show()
+'''
