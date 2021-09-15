@@ -2,4 +2,8 @@
 
 Finally! Draw your experiments before you build them. 
 
-![test](figures/breadboard1.png)
+![bb](figures/breadboard1.png)
+
+Even anodized!!!
+
+![bb_anodized](figures/breadboard1_dark.png)
