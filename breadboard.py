@@ -131,6 +131,25 @@ def line_intersection(line1, line2):
     d = (det(*line1), det(*line2))
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
+
+    #print(y)
+    #print(min(line2[:][1]))
+    #print(max(line2[:][1]))
+    print([line2[0][1], line2[1][1]])
+    print(x, y)
+    if min([line2[0][1], line2[1][1]]) < y < max([line2[0][1], line2[1][1]]):
+        if min([line2[0][0], line2[1][0]]) < x < max([line2[0][0], line2[1][0]]):
+            print('laser hits mirror')
+        else:
+            print('laser misses mirror in x')
+            x = line1[1][0]
+            y = line1[1][1]
+    else:
+        print('laser misses mirror in y')
+        x = line1[1][0]
+        y = line1[1][1]
+
+    print(x, y)
     return x, y
 
 def mirror_coordinates(center, rot, r):

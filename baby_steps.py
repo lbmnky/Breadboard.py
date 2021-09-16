@@ -2,7 +2,7 @@ from breadboard import *
 
 def main():
 
-    case = 'rel mirrors' # angle, abs mirrors, rel mirrors
+    case = 'abs mirrors' # angle, abs mirrors, rel mirrors
 
     if case == 'angle':
         # demonstrate variable angle of mirrors
@@ -23,8 +23,8 @@ def main():
         bb = {}
         bb = Breadboard()
         bb.draw(30,15)
-        bb.add_mirror(20, 10, 45, 1)
-        bb.add_mirror(20, 15, 180+45, 1)
+        bb.add_mirror(5, 20, 45, 1)
+        #bb.add_mirror(20, 15, 180+45, 1)
         bb.place_mirrors()
         bb.shoot_laser((0, 10), (10, 10))
         plt.show()
