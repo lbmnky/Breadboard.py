@@ -3,6 +3,20 @@ import matplotlib.pyplot as plt
 import shapely.geometry
 import descartes
 
+size = 25
+params = {
+    'legend.fontsize': 'large',
+    'figure.figsize': (20, 8),
+    'axes.labelsize': size,
+    'axes.titlesize': size,
+    'xtick.labelsize': size * 0.75,
+    'ytick.labelsize': size * 0.75,
+    'axes.titlepad': 5,
+    'xtick.bottom': False
+}
+plt.rcParams.update(params)
+
+
 class Breadboard:
     ''' docstring '''
     def __init__(self):
@@ -22,7 +36,7 @@ class Breadboard:
             fc_color = 'lightgray'
             hl_color = 'silver'
 
-        fig, self.ax = plt.subplots( 1 , figsize=(nx/2,ny))
+        fig, self.ax = plt.subplots( 1 , figsize=(3,4))
 
         self.ax.set_facecolor(fc_color)
 
@@ -73,43 +87,45 @@ class Breadboard:
         self.ax.fill(xx,yy,fc='dimgray',ec='k',zorder=10)
 
     def shoot_laser(self, o1, o2):
-        # origin and direction
-        self.laser.append(o1)
-        self.laser.append(o2)
+        print(o1[1])
+        for j in range(len(o1)):
+            # origin and direction
+            self.laser = []
+            self.laser.append(o1[j])
+            self.laser.append(o2[j])
+            # bounce laser off of mirrors (should work automatically)
+            for i in range(len(self.mirror)):
+                intersect = line_intersection((self.laser[i], self.laser[i + 1]), self.mirror[i])
+                self.laser[i + 1] = intersect
+                dx = self.laser[i + 1][0] - self.laser[i][0]
+                dy = self.laser[i + 1][1] - self.laser[i][1]
+                if dx <= 0 and dy <= 0:
+                    fx = -1
+                    fy = -1
+                elif dx <= 0 and dy >= 0:
+                    fx = -1
+                    fy =  1
+                elif dx >= 0 and dy <= 0:
+                    fx =  1
+                    fy = 1
+                elif dx >= 0 and dy >= 0:
+                    fx =  1
+                    fy =  -1
+                else:
+                    print('error')
+                    print(dx)
+                    print(dy)
 
-        # bounce laser off of mirrors (should work automatically)
-        for i in range(len(self.mirror)):
-            intersect = line_intersection((self.laser[i], self.laser[i + 1]), self.mirror[i])
-            self.laser[i + 1] = intersect
-            dx = self.laser[i + 1][0] - self.laser[i][0]
-            dy = self.laser[i + 1][1] - self.laser[i][1]
-            if dx <= 0 and dy <= 0:
-                fx = -1
-                fy = -1
-            elif dx <= 0 and dy >= 0:
-                fx = -1
-                fy =  1
-            elif dx >= 0 and dy <= 0:
-                fx =  1
-                fy = 1
-            elif dx >= 0 and dy >= 0:
-                fx =  1
-                fy =  -1
-            else:
-                print('error')
-                print(dx)
-                print(dy)
+                r = np.sqrt(dx**2 + dy**2)
+                laser_angle = fx * fy * np.arccos(dx / r)
+                new_dir_x = intersect[0] + 2 * 2.54 * np.cos(laser_angle + 2 * self.mirror_rot[i])
+                new_dir_y = intersect[1] + 2 * 2.54 * np.sin(laser_angle + 2 * self.mirror_rot[i])
+                self.laser.append((new_dir_x, new_dir_y))
 
-            r = np.sqrt(dx**2 + dy**2)
-            laser_angle = fx * fy * np.arccos(dx / r)
-            new_dir_x = intersect[0] + 2 * 2.54 * np.cos(laser_angle + 2 * self.mirror_rot[i])
-            new_dir_y = intersect[1] + 2 * 2.54 * np.sin(laser_angle + 2 * self.mirror_rot[i])
-            self.laser.append((new_dir_x, new_dir_y))
-
-        self.laser = shapely.geometry.LineString(self.laser)
-        poly = self.laser.buffer(0.25, single_sided=False)
-        patch = descartes.PolygonPatch(poly, fc='red', ec='darkred', alpha=0.75, zorder=10)
-        self.ax.add_patch(patch)
+            self.laser = shapely.geometry.LineString(self.laser)
+            poly = self.laser.buffer(0.025, single_sided=False)
+            patch = descartes.PolygonPatch(poly, fc='red', ec='none', alpha=0.75, zorder=10)
+            self.ax.add_patch(patch)
 
 def rad(phi):
     ''' doc '''
@@ -132,9 +148,8 @@ def line_intersection(line1, line2):
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
 
-    #print(y)
-    #print(min(line2[:][1]))
-    #print(max(line2[:][1]))
+
+    '''
     print([line2[0][1], line2[1][1]])
     print(x, y)
     if min([line2[0][1], line2[1][1]]) < y < max([line2[0][1], line2[1][1]]):
@@ -148,8 +163,8 @@ def line_intersection(line1, line2):
         print('laser misses mirror in y')
         x = line1[1][0]
         y = line1[1][1]
+    '''
 
-    print(x, y)
     return x, y
 
 def mirror_coordinates(center, rot, r):

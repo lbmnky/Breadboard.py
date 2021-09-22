@@ -2,14 +2,16 @@ from breadboard import *
 
 def main():
 
+    angles = [7.5, 30, 60]
     bb = {}
-    for i in range(4):
+    for i in range(len(angles)):
         bb[i] = Breadboard()
         bb[i].draw(9, 12, False)
 
         bb[i].add_mirror(10, 26, -45, -1, 2.5)
 
-        alpha = 5 + 25 * i
+        #alpha = 7.5 + 22.5 * (i)
+        alpha = angles[i]
         beta = 5
 
         xc = 10
@@ -20,6 +22,7 @@ def main():
 
         bb[i].add_mirror(xc_s, yc_s, 180 + alpha, -1)
         bb[i].draw_circle(xc, yc, r + 1)
+        bb[i].draw_circle(xc, yc, r - 1)
 
         xn = xc + r * np.cos(rad(+alpha * 2 + 90))
         yn = yc + r * np.sin(rad(+alpha * 2 + 90))
@@ -34,7 +37,7 @@ def main():
 
         bb[i].place_mirrors()
 
-        bb[i].shoot_laser((0, 26), (10, 26))
+        bb[i].shoot_laser([(0, 26.25), (0, 26), (0, 25.75)], [(10, 26.17), (10, 26), (10, 25.83)])
         plt.title(f"AOI = {alpha}°")
     plt.show()
 
